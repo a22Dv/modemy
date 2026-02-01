@@ -1,7 +1,7 @@
 # --------------------------------- Top level -------------------------------- #
 BasedOnStyle: Google
 IndentWidth: 4
-ColumnLimit: 100
+ColumnLimit: 110
 
 # --------------------------------- Alignment -------------------------------- #
 DerivePointerAlignment: false
