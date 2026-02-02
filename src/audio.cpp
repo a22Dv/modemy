@@ -17,13 +17,15 @@ extern "C" {
 
 namespace mdm {
 
-AudioDevice::AudioDevice() {
+AudioDevice::AudioDevice(i32 sample_rate) : _sample_rate{sample_rate} {
+    _out_samples = std::vector<f32>(usize(_sample_rate / 4), 0.0f);
+    _in_samples = std::vector<f32>(usize(_sample_rate / 4), 0.0f);
     ma_device_config config = ma_device_config_init(ma_device_type_duplex);
     config.capture.channels = channels;
     config.playback.channels = channels;
     config.capture.format = ma_format_f32;
     config.playback.format = ma_format_f32;
-    config.sampleRate = sample_rate;
+    config.sampleRate = _sample_rate;
     config.pUserData = this;
     config.dataCallback = _callback;
     ma_result initr = ma_device_init(NULL, &config, &_device);
