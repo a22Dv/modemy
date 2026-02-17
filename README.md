@@ -2,7 +2,7 @@
 ![Language](https://img.shields.io/badge/C++%2D20-blue?logo=cplusplus&logoColor=white)
 ![MIT License](https://img.shields.io/badge/License-MIT-green)
 
-An minimal audio-based software modulator.
+A minimal audio-based software modulator.
 It uses a musical scale to create sound out of a given file's data.
 
 ## Features
