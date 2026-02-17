@@ -1,7 +1,3 @@
-#include <fstream>
-#include <iostream>
-#include <vector>
-
 #pragma warning(push, 1)
 #define MINIAUDIO_IMPLEMENTATION
 extern "C" {
@@ -9,21 +5,54 @@ extern "C" {
 }
 #pragma warning(pop)
 
+#include <algorithm>
+#include <filesystem>
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+
 #include "core/audio_device.hpp"
+#include "core/modulator.hpp"
 
-int main() {
-    std::ifstream s{"C:/dev/repositories/modemy/data/wh.wav", std::ios::binary};
-    s.seekg(0x4E);
-    mdm::AudioDevice dev{44100, 2, false, true};
-
-    std::vector<mdm::i16> sm16(2048);
-    std::vector<mdm::f32> sm32(2048);
-    while (!s.eof()) {
-        s.read(reinterpret_cast<char *>(sm16.data()), sm16.size() * sizeof(mdm::i16));
-        for (mdm::usize i = 0; i < sm16.size(); ++i) {
-            sm32[i] = sm16[i] / 32767.0f;
+int main(int argc, char **argv) {
+    using namespace mdm;
+    try {
+        if (argc != 7) {
+            std::cout
+                << "Usage: modemy <SAMPLE_RATE> <CHANNELS> <ROOT-FREQUENCY> <MUSICAL SCALE> <BPM> "
+                   "<FILE-PATH>\n";
+            return EXIT_FAILURE;
         }
-        dev.push(sm32);
+        const f32 sample_rate = std::stof(argv[1]);
+        const i32 channels = std::stoi(argv[2]);
+        const f32 root_frequency = std::stof(argv[3]);
+        const Scale scale = [&] {
+            std::string scl = argv[4];
+            std::transform(scl.begin(), scl.end(), scl.begin(), [](auto a) {
+                return char(a & ~0x20);
+            });
+            if (scl == "MAJOR") {
+                return Scale::MAJOR;
+            } else if (scl == "MINOR") {
+                return Scale::MINOR;
+            } else if (scl == "PENTATONIC") {
+                return Scale::PENTATONIC;
+            }
+            throw std::runtime_error("[ERR] Invalid Argument.");
+            return Scale::MINOR;
+        }();
+        const i32 bpm = std::stoi(argv[5]);
+        const std::filesystem::path fpath{argv[6]};
+        AudioDevice dev{i32(sample_rate), channels, false, true};
+        Modulator mod{root_frequency, f32(bpm), scale, i32(sample_rate), channels, fpath};
+        std::vector<f32> data(2048);
+        while (!mod.eof()) {
+            mod.get_samples(data);
+            dev.push(data);
+        }
+        return EXIT_SUCCESS;
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << '\n';
+        return EXIT_FAILURE;
     }
-    return 0;
 }

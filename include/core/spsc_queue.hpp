@@ -1,5 +1,5 @@
 #pragma once
-#pragma warning(push, 1)
+#pragma warning(disable: 4324)
 
 #include <array>
 #include <atomic>
@@ -81,5 +81,3 @@ class SPSCQueue {
 };
 
 }  // namespace mdm
-
-#pragma warning(pop)
